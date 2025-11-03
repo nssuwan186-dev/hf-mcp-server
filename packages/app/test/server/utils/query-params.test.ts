@@ -124,6 +124,39 @@ describe('extractQueryParamsToHeaders', () => {
 		expect(headers['x-mcp-gradio']).toBe('evalstate/flux1_schnell');
 	});
 
+	it('should extract jobtimeout when valid positive integer', () => {
+		const req = {
+			query: { jobtimeout: '45' },
+		} as unknown as Request;
+
+		const headers: Record<string, string> = {};
+		extractQueryParamsToHeaders(req, headers);
+
+		expect(headers['x-mcp-job-timeout']).toBe('45');
+	});
+
+	it('should ignore jobtimeout when not a positive integer', () => {
+		const req = {
+			query: { jobtimeout: 'abc' },
+		} as unknown as Request;
+
+		const headers: Record<string, string> = {};
+		extractQueryParamsToHeaders(req, headers);
+
+		expect(headers['x-mcp-job-timeout']).toBeUndefined();
+	});
+
+	it('should allow jobtimeout of -1 to indicate wait-until-complete', () => {
+		const req = {
+			query: { jobtimeout: '-1' },
+		} as unknown as Request;
+
+		const headers: Record<string, string> = {};
+		extractQueryParamsToHeaders(req, headers);
+
+		expect(headers['x-mcp-job-timeout']).toBe('-1');
+	});
+
 	it('should set no-image header when no_image_content=true', () => {
 		const req = {
 			query: { no_image_content: 'true' },

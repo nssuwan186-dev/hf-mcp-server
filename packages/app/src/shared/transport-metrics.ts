@@ -251,6 +251,10 @@ export function formatMetricsForAPI(
 		startupTime: metrics.startupTime.toISOString(),
 		currentTime: currentTime.toISOString(),
 		uptimeSeconds,
+		tasks: {
+			active: 0,
+			completed: 0,
+		},
 		connections: metrics.connections,
 		sessionLifecycle: metrics.sessions,
 		requests: metrics.requests,
