@@ -1,6 +1,21 @@
 import type { LogEvent } from './types.js';
 
 /**
+ * Default duration to wait for logs when not detached (in milliseconds)
+ */
+export const DEFAULT_LOG_WAIT_MS = 10000; // 10 seconds
+
+/**
+ * Default duration to wait for logs when not detached (in seconds, for display)
+ */
+export const DEFAULT_LOG_WAIT_SECONDS = DEFAULT_LOG_WAIT_MS / 1000;
+
+/**
+ * Default maximum number of log lines to return
+ */
+export const DEFAULT_MAX_LOG_LINES = 20;
+
+/**
  * Options for fetching logs via SSE
  */
 export interface SseLogOptions {
@@ -33,9 +48,7 @@ export interface SseLogResult {
  * @returns Log result with collected lines and status
  */
 export async function fetchJobLogs(url: string, options: SseLogOptions = {}): Promise<SseLogResult> {
-	const { maxDuration: requestedDuration, maxLines = 20, token } = options;
-	const waitIndefinitely = typeof requestedDuration === 'number' && requestedDuration < 0;
-	const maxDuration = requestedDuration ?? 10000;
+	const { maxDuration = DEFAULT_LOG_WAIT_MS, maxLines = DEFAULT_MAX_LOG_LINES, token } = options;
 
 	const logLines: string[] = [];
 	let finished = false;

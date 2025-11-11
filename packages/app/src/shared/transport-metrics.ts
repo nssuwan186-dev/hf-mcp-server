@@ -118,6 +118,28 @@ export interface GradioToolMetrics {
 }
 
 /**
+ * Gradio cache metrics for space metadata and schemas
+ */
+export interface GradioCacheMetrics {
+	spaceMetadata: {
+		hits: number;
+		misses: number;
+		hitRate: number; // percentage
+		etagRevalidations: number;
+		cacheSize: number;
+	};
+	schemas: {
+		hits: number;
+		misses: number;
+		hitRate: number; // percentage
+		cacheSize: number;
+	};
+	totalHits: number;
+	totalMisses: number;
+	overallHitRate: number; // percentage
+}
+
+/**
  * API response format for transport metrics
  */
 export interface SessionData {
@@ -226,11 +248,8 @@ export interface TransportMetricsResponse {
 	// Gradio tool call metrics
 	gradioMetrics?: GradioToolMetrics;
 
-	// Task metrics (stateful transports)
-	tasks: {
-		active: number;
-		completed: number;
-	};
+	// Gradio cache metrics (discovery optimization)
+	gradioCacheMetrics?: GradioCacheMetrics;
 }
 
 /**
@@ -351,41 +370,41 @@ class RollingWindowCounter {
 	private readonly buckets: number[];
 	private currentBucket: number = 0;
 	private lastRotation: number = Date.now();
-	
+
 	constructor(windowMinutes: number) {
 		this.buckets = new Array(windowMinutes).fill(0);
 	}
-	
+
 	increment(): void {
 		this.rotateBucketsIfNeeded();
 		const current = this.buckets[this.currentBucket] ?? 0;
 		this.buckets[this.currentBucket] = current + 1;
 	}
-	
+
 	getCount(): number {
 		this.rotateBucketsIfNeeded();
 		return this.buckets.reduce((sum, count) => sum + count, 0);
 	}
-	
+
 	private rotateBucketsIfNeeded(): void {
 		const now = Date.now();
 		const minutesPassed = Math.floor((now - this.lastRotation) / 60000);
-		
+
 		// Rotate and clear buckets for each minute that has passed
 		for (let i = 0; i < minutesPassed && i < this.buckets.length; i++) {
 			this.currentBucket = (this.currentBucket + 1) % this.buckets.length;
 			this.buckets[this.currentBucket] = 0;
 		}
-		
+
 		// If all buckets need to be cleared (time gap > window size)
 		if (minutesPassed >= this.buckets.length) {
 			this.buckets.fill(0);
 			this.currentBucket = 0;
 		}
-		
+
 		if (minutesPassed > 0) {
 			// Update to the last minute boundary that was processed
-			this.lastRotation = this.lastRotation + (minutesPassed * 60000);
+			this.lastRotation = this.lastRotation + minutesPassed * 60000;
 		}
 	}
 }
@@ -413,15 +432,15 @@ export class MetricsCounter {
 		// Calculate rates (requests per minute) for each window
 		// Note: All values represent "requests per minute" calculated over their respective windows
 		this.metrics.requests.lastMinute = this.rollingMinute.getCount(); // Requests in last 1 minute (already per minute)
-		
+
 		// For longer windows, divide total count by window size to get per-minute rate
 		const hourCount = this.rollingHour.getCount();
 		const threeHourCount = this.rolling3Hours.getCount();
-		
+
 		// Calculate per-minute rates for the longer windows
 		this.metrics.requests.lastHour = Math.round((hourCount / 60) * 100) / 100; // Requests per minute over last hour
 		this.metrics.requests.last3Hours = Math.round((threeHourCount / 180) * 100) / 100; // Requests per minute over last 3 hours
-			
+
 		return this.metrics;
 	}
 
@@ -431,20 +450,20 @@ export class MetricsCounter {
 	trackRequest(): void {
 		this.metrics.requests.total++;
 		this.updateRequestsPerMinute();
-		
+
 		// Update rolling window counters
 		this.rollingMinute.increment();
 		this.rollingHour.increment();
 		this.rolling3Hours.increment();
-		
+
 		// Calculate rates (requests per minute) for each window
 		// Note: All values represent "requests per minute" calculated over their respective windows
 		this.metrics.requests.lastMinute = this.rollingMinute.getCount(); // Requests in last 1 minute (already per minute)
-		
+
 		// For longer windows, divide total count by window size to get per-minute rate
 		const hourCount = this.rollingHour.getCount();
 		const threeHourCount = this.rolling3Hours.getCount();
-		
+
 		// Calculate per-minute rates for the longer windows
 		this.metrics.requests.lastHour = Math.round((hourCount / 60) * 100) / 100; // Requests per minute over last hour
 		this.metrics.requests.last3Hours = Math.round((threeHourCount / 180) * 100) / 100; // Requests per minute over last 3 hours
@@ -698,7 +717,6 @@ export class MetricsCounter {
 			this.metrics.sessions.created++;
 		}
 	}
-
 
 	/**
 	 * Track a failed session resumption attempt

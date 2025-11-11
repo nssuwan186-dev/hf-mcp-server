@@ -15,6 +15,7 @@ import type { Task } from '@modelcontextprotocol/sdk/types.js';
 import { CORS_ALLOWED_ORIGINS, CORS_EXPOSED_HEADERS } from '../shared/constants.js';
 import { apiMetrics } from './utils/api-metrics.js';
 import { gradioMetrics } from './utils/gradio-metrics.js';
+import { formatCacheMetricsForAPI } from './utils/gradio-cache.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -52,8 +53,6 @@ export class WebServer {
 			}
 			next();
 		});
-
-
 
 		// Global CORS for all routes (API + MCP endpoints)
 		// Simple exact-match allowlist with optional env override
@@ -226,7 +225,6 @@ export class WebServer {
 	}
 
 	public setupApiRoutes(): void {
-
 		// Transport info endpoint
 		this.app.get('/api/transport', (_req, res) => {
 			res.json(this.transportInfo);
@@ -350,36 +348,8 @@ export class WebServer {
 				// Add Gradio metrics
 				formattedMetrics.gradioMetrics = gradioMetrics.getMetrics();
 
-				// Add task metrics (always present for UI consistency)
-				if (!isStateless && this.taskStore) {
-					let active = 0;
-					let completed = 0;
-					try {
-						const tasks = this.taskStore.getAllTasks();
-						if (Array.isArray(tasks)) {
-							for (const task of tasks) {
-								if (!task || !task.status) continue;
-								switch (task.status) {
-									case 'submitted':
-									case 'working':
-									case 'input_required':
-										active++;
-										break;
-									case 'completed':
-										completed++;
-										break;
-									default:
-										break;
-								}
-							}
-						}
-					} catch (taskError) {
-						logger.warn({ taskError }, 'Failed to collect task metrics');
-					}
-					formattedMetrics.tasks = { active, completed };
-				} else {
-					formattedMetrics.tasks = { active: 0, completed: 0 };
-				}
+				// Add Gradio cache metrics
+				formattedMetrics.gradioCacheMetrics = formatCacheMetricsForAPI();
 
 				// Add temp log status if it was activated or if we need to check current status
 				const extendedMetrics = formattedMetrics as typeof formattedMetrics & { tempLogStatus?: unknown };
