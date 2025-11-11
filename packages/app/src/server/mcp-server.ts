@@ -876,6 +876,7 @@ export const createServerFactory = (_webServerInstance: WebServer, sharedApiClie
 
 		registerCapabilities(server, sharedApiClient, {
 			hasResources: sessionInfo?.clientInfo?.name === 'openai-mcp',
+			hasJobs: toolSelection.enabledToolIds.includes(HF_JOBS_TOOL_CONFIG.name),
 		});
 
 		if (!skipGradio) {

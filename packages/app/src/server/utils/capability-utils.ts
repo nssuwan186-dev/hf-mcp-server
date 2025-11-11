@@ -9,6 +9,7 @@ export interface RegisterCapabilitiesOptions {
 	 * If true, the resources capability will be included
 	 */
 	hasResources?: boolean;
+	hasJobs?: boolean;
 }
 
 /**
@@ -29,7 +30,7 @@ export function registerCapabilities(
 	options: RegisterCapabilitiesOptions = {}
 ): void {
 	const transportInfo = sharedApiClient.getTransportInfo();
-	const { hasResources = false } = options;
+	const { hasResources = false, hasJobs = false } = options;
 
 	const capabilities: ServerCapabilities = {
 		tools: {
@@ -45,6 +46,7 @@ export function registerCapabilities(
 					},
 				}
 			: {}),
+		...(hasJobs ? { tasks: { requests: { tools: { call: true } } } } : {}),
 	};
 
 	server.server.registerCapabilities(capabilities);
