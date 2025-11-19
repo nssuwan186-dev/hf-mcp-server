@@ -264,6 +264,12 @@ export function StatefulTransportMetrics({ metrics }: StatefulTransportMetricsPr
 								<TableCell className="font-medium text-sm">Server Errors (5xx)</TableCell>
 								<TableCell className="text-sm font-mono">{metrics.errors.unexpected}</TableCell>
 							</TableRow>
+							<TableRow>
+								<TableCell className="font-medium text-sm">Unique IPs</TableCell>
+								<TableCell className="text-sm font-mono">{metrics.connections.uniqueIps || 0}</TableCell>
+								<TableCell className="font-medium text-sm"></TableCell>
+								<TableCell className="text-sm font-mono"></TableCell>
+							</TableRow>
 							{metrics.pings && (
 								<TableRow>
 									<TableCell className="font-medium text-sm">Pings Sent</TableCell>

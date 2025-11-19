@@ -168,7 +168,8 @@ export class StatelessHttpTransport extends BaseTransport {
 			if (requestBody?.method === 'initialize') {
 				// Create new session
 				sessionId = randomUUID();
-				this.createAnalyticsSession(sessionId, authResult.userIdentified);
+				const ipAddress = req.ip || req.socket.remoteAddress;
+				this.createAnalyticsSession(sessionId, authResult.userIdentified, ipAddress);
 
 				// Add session ID to response headers
 				res.setHeader('Mcp-Session-Id', sessionId);
@@ -492,7 +493,7 @@ export class StatelessHttpTransport extends BaseTransport {
 	}
 
 	// Analytics mode methods
-	private createAnalyticsSession(sessionId: string, isAuthenticated: boolean): void {
+	private createAnalyticsSession(sessionId: string, isAuthenticated: boolean, ipAddress?: string): void {
 		const session: AnalyticsSession = {
 			transport: null,
 			server: null, // Server is null in analytics mode
@@ -503,13 +504,15 @@ export class StatelessHttpTransport extends BaseTransport {
 				requestCount: 1,
 				isAuthenticated,
 				capabilities: {},
+				ipAddress,
 			},
 		};
 
 		this.analyticsSessions.set(sessionId, session);
 		this.metrics.trackSessionCreated();
+		this.metrics.trackIpAddress(ipAddress);
 
-		logger.debug({ sessionId, isAuthenticated }, 'Analytics session created');
+		logger.debug({ sessionId, isAuthenticated, ipAddress }, 'Analytics session created');
 	}
 
 	private updateAnalyticsSessionActivity(sessionId: string): void {

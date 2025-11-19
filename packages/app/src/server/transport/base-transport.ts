@@ -59,6 +59,7 @@ export interface SessionMetadata {
 	};
 	pingFailures?: number;
 	lastPingAttempt?: Date;
+	ipAddress?: string;
 }
 
 /**
