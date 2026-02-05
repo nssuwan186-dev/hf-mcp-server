@@ -4,7 +4,7 @@
 - `packages/app`: MCP server plus management web UI. Server code lives in `packages/app/src/server`, UI in `packages/app/src/web`, and tests in `packages/app/test`.
 - `packages/mcp`: shared MCP tools/library consumed by the server. Source is in `packages/mcp/src`, with tests in `packages/mcp/test` and a few `*.test.ts` files co-located in `src`.
 - `packages/e2e-python`: Python-based end-to-end harnesses and fixtures.
-- Root-level docs and support files live in `docs/`, `docs-internal/`, `scripts/`, `spec/`, and `Dockerfile`.
+- Root-level docs and support files live in `docs/`, `scripts/`, and `Dockerfile`.
 
 ## Build, Test, and Development Commands
 - `pnpm install`: install workspace dependencies (Corepack-managed pnpm).

@@ -153,7 +153,7 @@ docker run --rm -p 3000:3000 ghcr.io/evalstate/hf-mcp-server:latest
 ```
 ![image](https://github.com/user-attachments/assets/2fc0ef58-2c7a-4fae-82b5-e6442bfcbd99)
 
-All commands above start the Management Web interface on http://localhost:3000/. The Streamable HTTP server is accessible on  http://localhost:3000/mcp. See [Environment Variables](#Environment Variables) for configuration options. Docker defaults to Streamable HTTP (JSON RPC) mode.
+All commands above start the Management Web interface on http://localhost:3000/. The Streamable HTTP server is accessible on  http://localhost:3000/mcp. See [Environment Variables](#environment-variables) for configuration options. Docker defaults to Streamable HTTP (JSON RPC) mode.
 
 ### Developing OpenAI Apps SDK Components
 

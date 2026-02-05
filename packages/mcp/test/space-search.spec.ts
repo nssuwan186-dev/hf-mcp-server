@@ -1,7 +1,7 @@
 import { describe, beforeEach, afterEach, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
-import { SpaceSearchResult } from '../dist/space-search.js';
+import { SpaceSearchResult } from '../src/space-search.js';
 
 describe('SpaceSearchService', () => {
 	let space: SpaceSearchResult[];

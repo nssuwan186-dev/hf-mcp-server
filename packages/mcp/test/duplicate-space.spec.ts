@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DuplicateSpaceTool } from '../src/duplicate-space.js';
-import { NO_TOKEN_INSTRUCTIONS } from '../dist/utilities.js';
+import { NO_TOKEN_INSTRUCTIONS } from '../src/utilities.js';
 
 describe('DuplicateSpaceTool', () => {
 	describe('normalizeSpaceName', () => {
